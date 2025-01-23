@@ -6,7 +6,7 @@ import numpy as np
 from itertools import combinations
 
 # import data from fake data script
-data = fake_data.simulate_user_input(100)
+data = fake_data.simulate_user_input(101)
 df = pd.DataFrame(data)
 
 # create a function that pulls the coordinates to a given address
@@ -42,13 +42,23 @@ for (i, j) in name_combinations:
 # Sort the couples by distance
 distances.sort(key=lambda x: x[2])
 
-# Paare erstellen, sodass jede Person nur einmal zugeordnet wird
+# create pairs so that each person is assigned only once.
 paired_indices = set()      # A set for storing the indices that have already been used in a pair. This set is used to avoid duplicates and to speed up the search for previously used indices.
 pairs = []                  # save couples and distances
 total_distance = 0          # save total distance
 
 
-# the following algorithm runs through the list 'distance' and searches the indices to the matching names in df_upcoming_sunday
+# This line identifies and stores all names from df_upcoming_sunday that are not included in the list 'pairs', and saves them in the variable unpaired_names (necessary when the amount of participants is odd).
+unpaired_names = df_upcoming_sunday[~df_upcoming_sunday['name'].isin([name for name1, name2, distance in pairs for name in (name1, name2)])]
+
+# if unpaired_names is not empty then store the name into a list
+pairs_without_partner = []
+if not unpaired_names.empty:
+    pairs_without_partner.append(unpaired_names.iloc[0]['name'])
+    print(f"Sorry, our algorithm could not find a pair for this person: {unpaired_names.iloc[0]['name']}")
+
+
+# the following algorithm runs through the list 'distance' and searches the indices of the matching names in df_upcoming_sunday
 for name1, name2, distance in distances:
     index1 = df_upcoming_sunday[df_upcoming_sunday['name'] == name1].index[0]
     index2 = df_upcoming_sunday[df_upcoming_sunday['name'] == name2].index[0]
@@ -81,7 +91,7 @@ else:
 # print(f"Die Ausführung dauerte {execution_time} Sekunden.")
 
 ### Wie geht´s weiter?
-### Der Algorithmus muss beschriftet werden
 ### der Algorithmus muss nochmal so angepasst werden, dass Ausreißer geglättet werden
+### Was passiert bei einer ungeraden Anzahl an Teilnehmern?
 ### Was mach ich jetzt mit der Ausgabe?
 ### Die Information muss an die User zurückgespielt werden. Wie kann ich das machen? Mit einer User-ID?
